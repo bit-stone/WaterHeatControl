@@ -6,19 +6,18 @@ AnalogReader::AnalogReader()
 
 void AnalogReader::initReader()
 {
+    // configure pins
+    PORTD_DIR &= ~((1 << PIN0_bp) | (1 << PIN1_bp));
+
+    // configure ADC
     VREF.CTRLA |= (VREF_ADC0REFSEL_2V5_gc); // set 2.5v internal ref
 
     ADC0.CTRLA &= ~(1 << ADC_RESSEL_bp); // set 10 bit mode
-    // ADC0.CTRLA |= (1 << ADC_FREERUN_bp); // Enable Freerun Mode
-
     ADC0.CTRLB = ADC_SAMPNUM_ACC8_gc; // 8 samples per conversion
-
     ADC0.CTRLC = ADC_PRESC_DIV256_gc; // prescaler 32
 
     ADC0.MUXPOS = ADC_MUXPOS_AIN0_gc; // select AIN0 as source
-
     ADC0.CTRLA |= (1 << ADC_ENABLE_bp); // enable ADC0
-
     ADC0.INTCTRL |= (1 << ADC_RESRDY_bp); // enable result ready interrupt
 
     ADC0.COMMAND |= (1 << ADC_STCONV_bp); // start first conversion

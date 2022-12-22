@@ -7,7 +7,7 @@
 #define REF_FACTOR (REF_R2 / (REF_R1 + REF_R2))
 #define VOLTAGE_FACTOR (2.5f / REF_FACTOR)
 
-#define MAX_CHANNEL 2
+#define MAX_CHANNEL 1
 
 class AnalogReader
 {
