@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <AnalogReader.h>
-#include "Timer.h"
 #include <util/delay.h>
 
+#include "PwmOutput.h"
 #include "ResistanceTemperatureConverter.h"
 
 AnalogReader analogReader;
-Timer timer;
+PwmOutput pwmOutput;
 
 uint16_t input = 0;
 float referenceVoltage = 0.0f;
@@ -23,7 +23,7 @@ void setup()
   // put your setup code here, to run once:
   Serial.begin(115200);
   analogReader.initReader();
-  timer.initTimer();
+  pwmOutput.initTimer();
   sei();
 
   _delay_ms(500);
@@ -31,13 +31,15 @@ void setup()
 
 void loop()
 {
-  referenceVoltage = analogReader.getVoltage(0);
   temperatureVoltage = analogReader.getVoltage(1);
-  thirdValue = analogReader.getVoltage(2);
+  referenceVoltage = analogReader.getVoltage(0);
   temperatureResistance = ((referenceVoltage - temperatureVoltage) * 10000) / (temperatureVoltage);
   temperature = interpolateTempFromResistance(temperatureResistance);
+
+  pwmOutput.updateTemperature(temperature);
+
   Serial.println(temperature);
-  Serial.println("###");
+  Serial.println("--");
 
   _delay_ms(500);
 }

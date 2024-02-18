@@ -31,7 +31,7 @@ uint8_t middleIndex = 0;
 float result = 0.0f;
 
 float a = 0.0f;
-float b = 0.0f; 
+float b = 0.0f;
 float c = 0.0f;
 
 ResistanceTemperatureValue v0;
@@ -72,11 +72,11 @@ float interpolateTempFromResistance(uint16_t resistance)
     v0 = resistanceValues[leftIndex];
     v1 = resistanceValues[rightIndex];
 
-    a = ((float) v0.temperature) * ((float) v1.resistance - (float) resistance);
-    b = ((float) v1.temperature) * ((float) resistance - (float) v0.resistance);
-    c = ((float) v1.resistance - (float) v0.resistance);
+    a = ((float)v0.temperature) * ((float)v1.resistance - (float)resistance);
+    b = ((float)v1.temperature) * ((float)resistance - (float)v0.resistance);
+    c = ((float)v1.resistance - (float)v0.resistance);
 
-    result = (a+b)/c;
+    result = (a + b) / c;
 
     // return result
     return result;

@@ -2,10 +2,11 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
-#define REF_R1 10.0f
-#define REF_R2 10.0f
-#define REF_FACTOR (REF_R2 / (REF_R1 + REF_R2))
-#define VOLTAGE_FACTOR (2.5f / REF_FACTOR)
+// #define REF_R1 10.0f
+// #define REF_R2 10.0f
+// #define REF_FACTOR (REF_R2 / (REF_R1 + REF_R2))
+
+#define VOLTAGE_FACTOR 5.0f
 
 #define MAX_CHANNEL 1
 
