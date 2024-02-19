@@ -4,9 +4,11 @@
 
 #include "PwmOutput.h"
 #include "ResistanceTemperatureConverter.h"
+#include "Display.h"
 
 AnalogReader analogReader;
 PwmOutput pwmOutput;
+Display display;
 
 uint16_t input = 0;
 float referenceVoltage = 0.0f;
@@ -24,6 +26,7 @@ void setup()
   Serial.begin(115200);
   analogReader.initReader();
   pwmOutput.initTimer();
+  display.initDisplay();
   sei();
 
   _delay_ms(500);
@@ -38,10 +41,12 @@ void loop()
 
   pwmOutput.updateTemperature(temperature);
 
-  Serial.println(temperature);
-  Serial.println("--");
+  // Serial.println(temperature);
+  // Serial.println("--");
 
-  _delay_ms(500);
+  display.updateNumber(temperature);
+
+  _delay_ms(250);
 }
 
 ISR(ADC0_RESRDY_vect)

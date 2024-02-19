@@ -74,11 +74,9 @@ void PwmOutput::updateTemperature(float temperature)
         // linear interpolation
         nextValue = (((temperature - TEMPERATURE_MIN) * PUMP_PWM_DELTA) / TEMPERATURE_DELTA) + PUMP_PWM_MINIMAL_VALUE;
         updatePumpPwm(nextValue);
-        Serial.println(nextValue);
 
         nextValue = (((temperature - TEMPERATURE_MIN) * FAN_PWM_DELTA) / TEMPERATURE_DELTA) + FAN_PWM_MINIMAL_VALUE;
         updateFanPwm(nextValue);
-        Serial.println(nextValue);
     }
     else
     {
