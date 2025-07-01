@@ -1,6 +1,12 @@
 #include <Arduino.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <util/delay.h>
+
+/**
+ * This section controls a 4 digit 7 segment display
+ * as well as a few LEDs to cycle between modes.
+ */
 
 #define CLOCK_DELAY_US 5
 
@@ -16,6 +22,7 @@
 #define DISPLAY_BRIGHTNESS_MASK 0b10000000
 
 #define WITH_DECIMAL_POINT 0b10000000
+#define SYMBOL_ALL_SEGMENTS_ON 0b11111111
 #define SYMBOL_DEGREE 0b01100011
 #define SYMBOL_L 0b00111000
 #define SYMBOL_O 0b00111111
@@ -42,10 +49,20 @@ const uint8_t digitToSymbol[] = {
 class Display
 {
 private:
-    uint8_t digits[4] = {0, 0, 0, 0};
+    uint8_t displayDigits[4] = {0, 0, 0, 0};
+
+    volatile uint8_t *portOutSet = 0;
+    volatile uint8_t *portOutClr = 0;
+    volatile uint8_t *portDirSet = 0;
+    volatile uint8_t *portDirClr = 0;
+    volatile uint8_t *dataPinCtrl = 0;
+    volatile uint8_t *portInputReg = 0;
+    uint8_t clockPin = 0;
+    uint8_t dataPin = 0;
 
 public:
     Display();
+    void setPortData(volatile uint8_t *dataOutSetRegister, volatile uint8_t *dataOutClrRegister, volatile uint8_t *dataDirSetRegister, volatile uint8_t *dataDirClrRegister, volatile uint8_t *dataPinCtrlRegister, volatile uint8_t *dataPinInputRegister, uint8_t dataClockPin, uint8_t dataDataPin);
     void initDisplay();
     void clockDelay();
     void setClockLow();

@@ -1,23 +1,40 @@
 #include <Display.h>
-#include <util/delay.h>
+#include <LedOut.h>
 
 Display::Display()
 {
 }
 
+void Display::setPortData(volatile uint8_t *dataOutSetRegister,
+                          volatile uint8_t *dataOutClrRegister,
+                          volatile uint8_t *dataDirSetRegister,
+                          volatile uint8_t *dataDirClrRegister,
+                          volatile uint8_t *dataPinCtrlRegister,
+                          volatile uint8_t *dataPinInputRegister,
+                          uint8_t dataClockPin,
+                          uint8_t dataDataPin)
+{
+    portOutSet = dataOutSetRegister;
+    portOutClr = dataOutClrRegister;
+    portDirSet = dataDirSetRegister;
+    portDirClr = dataDirClrRegister;
+    dataPinCtrl = dataPinCtrlRegister;
+    portInputReg = dataPinInputRegister;
+    clockPin = dataClockPin;
+    dataPin = dataDataPin;
+}
+
 void Display::initDisplay()
 {
-    // set pb0 and pb1 as output, set output high by default
-    // pb0 = data, pb1 = clock
-    PORTB_DIRSET = PIN0_bm;
-    PORTB_DIRSET = PIN1_bm;
+    set_all_led();
+    // set pins as output, set output high by default
+    *portDirSet = (1 << dataPin) | (1 << clockPin);
+    *portOutSet = (1 << dataPin) | (1 << clockPin);
 
-    PORTB_OUTSET = PIN0_bm | PIN1_bm;
-
-    digits[0] = 0b01111111;
-    digits[1] = 0b11111111;
-    digits[2] = 0b01111111;
-    digits[3] = SYMBOL_DEGREE;
+    displayDigits[0] = SYMBOL_ALL_SEGMENTS_ON;
+    displayDigits[1] = SYMBOL_ALL_SEGMENTS_ON;
+    displayDigits[2] = SYMBOL_ALL_SEGMENTS_ON;
+    displayDigits[3] = SYMBOL_ALL_SEGMENTS_ON;
 
     Display::show();
 }
@@ -29,42 +46,47 @@ void Display::clockDelay()
 
 void Display::setClockLow()
 {
-    PORTB_OUTCLR = PIN1_bm;
+    *portOutClr = (1 << clockPin);
 }
 
 void Display::setClockHigh()
 {
-    PORTB_OUTSET = PIN1_bm;
+    *portOutSet = (1 << clockPin);
 }
 
 void Display::setDataLow()
 {
-    PORTB_OUTCLR = PIN0_bm;
+    *portOutClr = (1 << dataPin);
 }
 
 void Display::setDataHigh()
 {
-    PORTB_OUTSET = PIN0_bm;
+    *portOutSet = (1 << dataPin);
 }
 
 void Display::updateNumber(float input)
 {
-    if(input < 0.0) {
-        digits[0] = SYMBOL_L;
-        digits[1] = SYMBOL_O;
-        digits[2] = SYMBOL_W_LEFT;
-        digits[3] = SYMBOL_W_RIGHT;
-    } else if(input > 99.9) {
-        digits[0] = SYMBOL_H;
-        digits[1] = SYMBOL_I;
-        digits[2] = SYMBOL_G;
-        digits[3] = SYMBOL_H;
-    } else {
-        uint16_t output = (int) (input * 10);
-        digits[0] = digitToSymbol[(int) (output / 100)];
-        digits[1] = (digitToSymbol[(int) ((output % 100) / 10)] | WITH_DECIMAL_POINT);
-        digits[2] = digitToSymbol[(int) ((output % 10))];
-        digits[3] = SYMBOL_DEGREE;
+    if (input < 0.0)
+    {
+        displayDigits[0] = SYMBOL_L;
+        displayDigits[1] = SYMBOL_O;
+        displayDigits[2] = SYMBOL_W_LEFT;
+        displayDigits[3] = SYMBOL_W_RIGHT;
+    }
+    else if (input > 99.9)
+    {
+        displayDigits[0] = SYMBOL_H;
+        displayDigits[1] = SYMBOL_I;
+        displayDigits[2] = SYMBOL_G;
+        displayDigits[3] = SYMBOL_H;
+    }
+    else
+    {
+        uint16_t output = (int)(input * 10);
+        displayDigits[0] = digitToSymbol[(int)(output / 100)];
+        displayDigits[1] = (digitToSymbol[(int)((output % 100) / 10)] | WITH_DECIMAL_POINT);
+        displayDigits[2] = digitToSymbol[(int)((output % 10))];
+        displayDigits[3] = SYMBOL_DEGREE;
     }
 
     Display::show();
@@ -73,7 +95,7 @@ void Display::updateNumber(float input)
 void Display::startCondition()
 {
     // set data pin as output again
-    PORTB_DIRSET = PIN0_bm;
+    *portDirSet = (1 << dataPin);
 
     // start condition: clock/data high, data goes low
     Display::setClockHigh();
@@ -127,14 +149,14 @@ void Display::sendByte(uint8_t data)
 
     // ACK: Data will be pulled low by target chip on falling edge of 8th clock signal
     // set as input to detect ack with pullup enabled
-    PORTB_DIRCLR = PIN0_bm;
-    PORTB_PIN0CTRL = PORT_PULLUPEN_bm;
     Display::setClockLow();
+    *portDirClr = (1 << dataPin);
+    *dataPinCtrl |= PORT_PULLUPEN_bm;
 
     uint8_t count = 0;
     Display::clockDelay();
 
-    while (count < 100 && !(PORTB_IN && (1 << PIN0_bp)))
+    while (count < 100 && !(*portInputReg && (1 << dataPin)))
     {
         Display::clockDelay();
         count++;
@@ -142,7 +164,7 @@ void Display::sendByte(uint8_t data)
 
     if (count >= 100)
     {
-        Serial.println("ACK not received!");
+        // Serial.println("ERRACK");
         return;
     }
 
@@ -152,14 +174,14 @@ void Display::sendByte(uint8_t data)
     Display::setClockLow();
 
     // set data pin as output again
-    PORTB_DIRSET = PIN0_bm;
+    *portDirSet |= (1 << dataPin);
 }
 
 void Display::show()
 {
     for (uint8_t k = 0; k < 4; k++)
     {
-        Display::sendDigit(k, digits[k]);
+        Display::sendDigit(k, displayDigits[k]);
     }
 }
 
