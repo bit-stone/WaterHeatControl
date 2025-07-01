@@ -7,7 +7,7 @@ AnalogReader::AnalogReader()
 void AnalogReader::initReader()
 {
     // configure pins
-    PORTD_DIR &= ~((1 << PIN0_bp) | (1 << PIN1_bp));
+    PORTD_DIR &= ~((1 << PIN0_bp) | (1 << PIN1_bp)) | (1 << PIN2_bp);
 
     // set internal voltage reference to 2.5V
     VREF.CTRLA = 0b00000000;
@@ -21,12 +21,12 @@ void AnalogReader::initReader()
 
     ADC0.CTRLB = 0b00000000;
     ADC0.CTRLB = ADC_SAMPNUM_ACC8_gc; // 8 samples per conversion
-    
+
     ADC0.CTRLA = 0b00000000;
     ADC0.CTRLA &= ~(1 << ADC_RESSEL_bp); // set 10 bit mode
-    ADC0.CTRLA |= (1 << ADC_ENABLE_bp); // enable ADC0
+    ADC0.CTRLA |= (1 << ADC_ENABLE_bp);  // enable ADC0
 
-    ADC0.MUXPOS = ADC_MUXPOS_AIN0_gc; // select AIN0 as source
+    ADC0.MUXPOS = ADC_MUXPOS_AIN0_gc;     // select AIN0 as source
     ADC0.INTCTRL |= (1 << ADC_RESRDY_bp); // enable result ready interrupt
 
     ADC0.COMMAND |= (1 << ADC_STCONV_bp); // start first conversion
@@ -46,7 +46,8 @@ uint16_t AnalogReader::getValue(uint8_t channel)
     return this->analogValues[channel];
 }
 
-float AnalogReader::getVoltage(uint8_t channel) {
+float AnalogReader::getVoltage(uint8_t channel)
+{
     float result = 0.0f;
     result = this->analogValues[channel];
     result = result / 1023.0;
@@ -56,7 +57,7 @@ float AnalogReader::getVoltage(uint8_t channel) {
 
 void AnalogReader::handleResult()
 {
-    // set new analog channel here because reading the value will trigger a 
+    // set new analog channel here because reading the value will trigger a
     // new conversion (I think)
     this->lastChannel = (this->currentChannel);
 
@@ -67,9 +68,10 @@ void AnalogReader::handleResult()
         this->currentChannel = 0;
     }
 
-    ADC0.MUXPOS = (this->currentChannel);
-    ADC0.COMMAND |= (1 << ADC_STCONV_bp);
-    
     // reading result, divided by the number of accumulated values
     this->analogValues[this->lastChannel] = ADC0_RES / 8;
+
+    // setting up next measurement
+    ADC0.MUXPOS = (this->currentChannel);
+    ADC0.COMMAND |= (1 << ADC_STCONV_bp);
 }
