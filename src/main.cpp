@@ -5,48 +5,89 @@
 #include "PwmOutput.h"
 #include "ResistanceTemperatureConverter.h"
 #include "Display.h"
+#include "LedOut.h"
 
 AnalogReader analogReader;
 PwmOutput pwmOutput;
-Display display;
+Display upperDisplay;
+Display lowerDisplay;
 
 uint16_t input = 0;
-float referenceVoltage = 0.0f;
-float temperatureVoltage = 0.0f;
-float thirdValue = 0.0f;
-float temperature = 0.0f;
+float referenceVolts = 0.0f;
+float waterTempVolts = 0.0f;
+float airTempVolts = 0.0f;
 
-uint16_t temperatureResistance = 0;
+float waterTemperature = 0.0f;
+float airTemperature = 0.0f;
 
+float delta_T = 0.0f;
 
+uint16_t waterTempResistance = 0;
+uint16_t airTempResistance = 0;
 
 void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(115200);
+
+  init_led_output();
+
+  upperDisplay.setPortData(
+      &PORTB_OUTSET,
+      &PORTB_OUTCLR,
+      &PORTB_DIRSET,
+      &PORTB_DIRCLR,
+      &PORTB_PIN0CTRL,
+      &PORTB_IN,
+      1,
+      0);
+
+  lowerDisplay.setPortData(
+      &PORTE_OUTSET,
+      &PORTE_OUTCLR,
+      &PORTE_DIRSET,
+      &PORTE_DIRCLR,
+      &PORTE_PIN0CTRL,
+      &PORTE_IN,
+      1,
+      0);
+
   analogReader.initReader();
   pwmOutput.initTimer();
-  display.initDisplay();
+  upperDisplay.initDisplay();
+  lowerDisplay.initDisplay();
+
   sei();
 
-  _delay_ms(500);
+  _delay_ms(1000);
 }
 
 void loop()
 {
-  temperatureVoltage = analogReader.getVoltage(1);
-  referenceVoltage = analogReader.getVoltage(0);
-  temperatureResistance = ((referenceVoltage - temperatureVoltage) * 10000) / (temperatureVoltage);
-  temperature = interpolateTempFromResistance(temperatureResistance);
+  airTempVolts = analogReader.getVoltage(2);
+  waterTempVolts = analogReader.getVoltage(1);
+  referenceVolts = analogReader.getVoltage(0);
 
-  pwmOutput.updateTemperature(temperature);
+  Serial.println(referenceVolts);
+  Serial.println(airTempVolts);
+  Serial.println(waterTempVolts);
+  Serial.println("---");
 
-  // Serial.println(temperature);
-  // Serial.println("--");
+  waterTempResistance = ((referenceVolts - waterTempVolts) * 10000) / (waterTempVolts);
+  airTempResistance = ((referenceVolts - airTempVolts) * 10000) / (airTempVolts);
 
-  display.updateNumber(temperature);
+  waterTemperature = interpolateTempFromResistance(waterTempResistance);
+  airTemperature = interpolateTempFromResistance(airTempResistance);
 
-  _delay_ms(250);
+  upperDisplay.updateNumber(waterTemperature);
+  lowerDisplay.updateNumber(airTemperature);
+
+  delta_T = waterTemperature - airTemperature;
+
+  applyDeltaT(delta_T);
+  pwmOutput.updateTemperature(waterTemperature);
+
+  _delay_ms(200);
 }
 
 ISR(ADC0_RESRDY_vect)
