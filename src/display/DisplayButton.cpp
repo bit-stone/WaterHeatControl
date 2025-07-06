@@ -22,7 +22,7 @@ void DisplayButton::handleButtonReleased()
     this->componentState->displayButtonReleasedFlag = true;
 }
 
-void DisplayButton::handleTick()
+void DisplayButton::tick()
 {
     currentButtonState = !(PORTC_IN & PIN6_bm);
     if (currentButtonState != lastButtonState)

@@ -8,6 +8,7 @@
 
 #include "PwmOutput.h"
 #include "RpmWatchdog.h"
+#include "AlarmBuzzer.h"
 
 #include "display/DisplayButton.h"
 #include "display/LedArray.h"
@@ -25,6 +26,8 @@ LedArray ledArray = LedArray(&componentState);
 
 DisplayButton displayButton = DisplayButton(&componentState);
 DisplayController displayController = DisplayController(&componentState);
+
+AlarmBuzzer alarmBuzzer = AlarmBuzzer(&componentState);
 
 uint16_t input = 0;
 
@@ -59,7 +62,9 @@ void setup()
 
   displayController.init();
 
-  _delay_ms(500);
+  _delay_ms(250);
+
+  alarmBuzzer.init();
   sei();
 }
 
@@ -70,13 +75,14 @@ void loop()
 
   displayController.update();
   ledArray.update();
+
   _delay_ms(100);
 }
 
 ISR(ADC0_RESRDY_vect)
 {
-  analogReader.handleResult();
   PORTE_OUTTGL = PIN2_bm;
+  analogReader.handleResult();
 }
 
 ISR(PORTF_PORT_vect)
@@ -90,7 +96,9 @@ ISR(PORTF_PORT_vect)
 ISR(RTC_PIT_vect)
 {
   rpmWatchdog.tick();
-  displayButton.handleTick();
+  displayButton.tick();
+
+  alarmBuzzer.tick();
 
   // CRITICAL: Clear interrupt flag!
   RTC_PITINTFLAGS |= (1 << RTC_PI_bp);

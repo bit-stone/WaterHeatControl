@@ -12,7 +12,7 @@ private:
 
     uint16_t currentCount = 0;
     uint16_t lastCount = 0;
-    uint16_t lastRpm = 0;
+    uint16_t lastRpm = 10;
     uint16_t tickCount = 0;
 
 public:

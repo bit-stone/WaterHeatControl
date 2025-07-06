@@ -23,6 +23,6 @@ public:
     void init();
     void handleButtonPressed();
     void handleButtonReleased();
-    void handleTick();
+    void tick();
 };
 #endif

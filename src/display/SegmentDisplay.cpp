@@ -126,7 +126,7 @@ void SegmentDisplay::sendByte(uint8_t data)
     if (count >= 100)
     {
         // TODO: Maybe set some display error in componentState?
-        PORTE_OUTTGL = (1 << PIN2_bp);
+        // PORTE_OUTTGL = (1 << PIN2_bp);
         return;
     }
 
