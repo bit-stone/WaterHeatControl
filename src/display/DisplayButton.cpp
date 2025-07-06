@@ -1,7 +1,8 @@
-#include "DisplayButton.h"
+#include "display/DisplayButton.h"
 
-DisplayButton::DisplayButton()
+DisplayButton::DisplayButton(ComponentState *componentState)
 {
+    this->componentState = componentState;
 }
 
 void DisplayButton::init()
@@ -13,12 +14,12 @@ void DisplayButton::init()
 
 void DisplayButton::handleButtonPressed()
 {
-    PORTE_OUTTGL = (1 << PIN2_bp);
+    this->componentState->displayButtonPressedFlag = true;
 }
 
 void DisplayButton::handleButtonReleased()
 {
-    PORTE_OUTTGL = (1 << PIN2_bp);
+    this->componentState->displayButtonReleasedFlag = true;
 }
 
 void DisplayButton::handleTick()

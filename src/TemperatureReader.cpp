@@ -1,6 +1,6 @@
 #include <TemperatureReader.h>
 
-TemperatureReader::TemperatureReader(AnalogReader analogReader, ComponentState *componentState)
+TemperatureReader::TemperatureReader(AnalogReader *analogReader, ComponentState *componentState)
 {
     this->componentState = componentState;
     this->analogReader = analogReader;
@@ -8,9 +8,9 @@ TemperatureReader::TemperatureReader(AnalogReader analogReader, ComponentState *
 
 void TemperatureReader::update()
 {
-    this->airTempVolts = this->analogReader.getVoltage(2);
-    this->waterTempVolts = this->analogReader.getVoltage(1);
-    this->referenceVolts = this->analogReader.getVoltage(0);
+    this->airTempVolts = this->analogReader->getVoltage(2);
+    this->waterTempVolts = this->analogReader->getVoltage(1);
+    this->referenceVolts = this->analogReader->getVoltage(0);
 
     waterTempResistance = ((referenceVolts - waterTempVolts) * 10000) / (waterTempVolts);
     airTempResistance = ((referenceVolts - airTempVolts) * 10000) / (airTempVolts);
@@ -19,6 +19,8 @@ void TemperatureReader::update()
     this->airTemperature = interpolateTempFromResistance(airTempResistance);
 
     this->delta_T = this->waterTemperature - this->airTemperature;
+
+    Serial.println(this->delta_T);
 
     // TODO add warnings and errors about delta_T
 

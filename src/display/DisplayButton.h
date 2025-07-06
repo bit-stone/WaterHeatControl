@@ -1,7 +1,6 @@
-#include <Arduino.h>
-#include <avr/interrupt.h>
 #include <avr/io.h>
-#include <util/delay.h>
+
+#include <ComponentState.h>
 
 #ifndef _BITSTONE_DISPLAY_BUTTON
 #define _BITSTONE_DISPLAY_BUTTON
@@ -13,12 +12,14 @@
 class DisplayButton
 {
 private:
+    ComponentState *componentState;
+
     uint8_t lastButtonState = DISPLAY_BUTTON_STATE_OPEN;
     uint8_t currentButtonState = DISPLAY_BUTTON_STATE_OPEN;
     uint8_t buttonTickCount = 0;
 
 public:
-    DisplayButton();
+    DisplayButton(ComponentState *componentState);
     void init();
     void handleButtonPressed();
     void handleButtonReleased();

@@ -51,7 +51,7 @@ void PwmOutput::updatePumpLevel(uint8_t level)
 
 void PwmOutput::updatePumpPercentage(uint16_t pwmValue)
 {
-    this->componentState->lastPumpPWMPercentage = (int)((float)(pwmValue / PWM_OUTPUT_MAX_VALUE) * 100);
+    this->componentState->lastPumpPWMPercentage = (int)(((float)pwmValue / PWM_OUTPUT_MAX_VALUE) * 100);
 }
 
 void PwmOutput::updateFanPwm(uint16_t value)
@@ -71,7 +71,7 @@ void PwmOutput::updateFanPwm(uint16_t value)
 
 void PwmOutput::updateFanPercentage(uint16_t pwmValue)
 {
-    this->componentState->lastFanPWMPercentage = (int)((float)(pwmValue / PWM_OUTPUT_MAX_VALUE) * 100);
+    this->componentState->lastFanPWMPercentage = (int)(((float)pwmValue / PWM_OUTPUT_MAX_VALUE) * 100);
 }
 
 void PwmOutput::update()

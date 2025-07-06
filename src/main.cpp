@@ -16,23 +16,22 @@
 ComponentState componentState;
 AnalogReader analogReader;
 
-TemperatureReader temperatureReader = TemperatureReader(analogReader, &componentState);
+TemperatureReader temperatureReader = TemperatureReader(&analogReader, &componentState);
 PwmOutput pwmOutput = PwmOutput(&componentState);
 
-RpmWatchdog rpmWatchdog;
+RpmWatchdog rpmWatchdog = RpmWatchdog(&componentState);
 
-LedArray ledArray;
+LedArray ledArray = LedArray(&componentState);
 
-DisplayController displayController;
-
-DisplayButton displayButton;
+DisplayButton displayButton = DisplayButton(&componentState);
+DisplayController displayController = DisplayController(&componentState);
 
 uint16_t input = 0;
 
 void setup()
 {
   // this is only for debugging. disable for production.
-  // Serial.begin(115200);
+  Serial.begin(115200);
 
   // init the debug output on PE2
   PORTE_DIRSET = (1 << PIN2_bp);
@@ -61,22 +60,23 @@ void setup()
   displayController.init();
 
   _delay_ms(500);
-
-  ledArray.clearAllLed();
-  ledArray.show();
-
   sei();
 }
 
 void loop()
 {
   temperatureReader.update();
+  pwmOutput.update();
+
+  displayController.update();
+  ledArray.update();
   _delay_ms(100);
 }
 
 ISR(ADC0_RESRDY_vect)
 {
   analogReader.handleResult();
+  PORTE_OUTTGL = PIN2_bm;
 }
 
 ISR(PORTF_PORT_vect)

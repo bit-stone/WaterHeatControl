@@ -1,7 +1,6 @@
-#include <Arduino.h>
-#include <avr/interrupt.h>
 #include <avr/io.h>
-#include <util/delay.h>
+
+#include <ComponentState.h>
 
 #ifndef _BITSTONE_RPM_WATCHDOG
 #define _BITSTONE_RPM_WATCHDOG
@@ -9,13 +8,15 @@
 class RpmWatchdog
 {
 private:
+    ComponentState *componentState;
+
     uint16_t currentCount = 0;
     uint16_t lastCount = 0;
     uint16_t lastRpm = 0;
     uint16_t tickCount = 0;
 
 public:
-    RpmWatchdog();
+    RpmWatchdog(ComponentState *componentState);
     void init();
     void incrementCount();
     void tick();

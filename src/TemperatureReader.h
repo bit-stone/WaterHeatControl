@@ -15,7 +15,7 @@ class TemperatureReader
 {
 private:
     ComponentState *componentState;
-    AnalogReader analogReader;
+    AnalogReader *analogReader;
 
     float referenceVolts = 0.0f;
     float waterTempVolts = 0.0f;
@@ -69,7 +69,7 @@ private:
     float interpolateTempFromResistance(uint16_t resistance);
 
 public:
-    TemperatureReader(AnalogReader analogReader, ComponentState *componentStateInput);
+    TemperatureReader(AnalogReader *analogReader, ComponentState *componentStateInput);
     void update();
 };
 

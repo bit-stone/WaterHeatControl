@@ -1,7 +1,8 @@
 #include <RpmWatchdog.h>
 
-RpmWatchdog::RpmWatchdog()
+RpmWatchdog::RpmWatchdog(ComponentState *componentState)
 {
+    this->componentState = componentState;
 }
 
 void RpmWatchdog::init()
@@ -38,6 +39,13 @@ void RpmWatchdog::tick()
         lastCount = currentCount;
         currentCount = 0;
         lastRpm = (lastCount * 60) >> 1;
+
+        componentState->lastPumpRpm = lastRpm;
+
+        if (lastRpm == 0)
+        {
+            this->componentState->error_noPumpRpm = true;
+        }
     }
 }
 

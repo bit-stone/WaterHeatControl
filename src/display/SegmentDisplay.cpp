@@ -1,4 +1,5 @@
 #include "display/SegmentDisplay.h"
+#include "SegmentDisplay.h"
 
 SegmentDisplay::SegmentDisplay()
 {
@@ -146,16 +147,13 @@ void SegmentDisplay::show()
 
     this->clockDelay();
 
-    this->startCondition();
     for (uint8_t k = 0; k < 4; k++)
     {
-        // looks like this is not needed - continuous data seems to work
-        // even per datasheet - although there is a funky second command that I
-        // am not doing?
-        // this->sendByte(SEGMENT_DISPLAY_ADDRESS_COMMAND_MASK | k);
-        this->sendByte(output[k]);
+        this->startCondition();
+        this->sendByte(SEGMENT_DISPLAY_ADDRESS_COMMAND_MASK | k);
+        this->sendByte(this->output[k]);
+        this->stopCondition();
     }
-    this->stopCondition();
 
     this->startCondition();
     this->sendByte(SEGMENT_DISPLAY_ON_COMMAND | SEGMENT_DISPLAY_BRIGHTNESS_MASK | 0b00000001);
@@ -178,4 +176,10 @@ void SegmentDisplay::setSymbol(uint8_t idx, uint8_t symbol)
     }
 
     this->output[idx] = symbol;
+}
+
+void SegmentDisplay::setOutput(uint8_t *input) {
+    for(uint8_t k = 0; k < 4; k++) {
+        this->output[k] = input[k];
+    }
 }
