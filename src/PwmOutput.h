@@ -2,29 +2,43 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
-#define PUMP_PWM_MINIMAL_VALUE 400
-#define PUMP_PWM_MAXIMAL_VALUE 640
-#define PUMP_PWM_DELTA (PUMP_PWM_MAXIMAL_VALUE - PUMP_PWM_MINIMAL_VALUE)
+#include "ComponentState.h"
 
-#define FAN_PWM_MINIMAL_VALUE 130
-#define FAN_PWM_MAXIMAL_VALUE 640
-#define FAN_PWM_DELTA (FAN_PWM_MAXIMAL_VALUE - FAN_PWM_MINIMAL_VALUE)
+#ifndef _BITSTONE_PWM_OUTPUT
+#define _BITSTONE_PWM_OUTPUT
 
-#define PWM_MAX_VALUE 640
+#define PWM_OUTPUT_MAX_VALUE 640
 
-#define TEMPERATURE_MIN 25.0
-#define TEMPERATURE_MAX 35.0
-#define TEMPERATURE_DELTA (TEMPERATURE_MAX - TEMPERATURE_MIN)
+#define PWM_OUTPUT_PUMP_LEVEL_1_PWM 380
+#define PWM_OUTPUT_PUMP_LEVEL_2_PWM 440
+#define PWM_OUTPUT_PUMP_LEVEL_3_PWM 500 // no max value needed, pump is quite powerful
+
+#define PWM_OUTPUT_FAN_MIN_VALUE 130
+#define PWM_OUTPUT_FAN_MAX_VALUE PWM_OUTPUT_MAX_VALUE
+#define PWM_OUTPUT_FAN_PWM_DELTA (PWM_OUTPUT_FAN_MAX_VALUE - PWM_OUTPUT_FAN_MIN_VALUE)
+
+#define PWM_OUTPUT_DELTA_T_MINIMUM 3.0f
+#define PWM_OUTPUT_DELTA_T_MAXIMUM 15.0f
+#define PWM_OUTPUT_DELTA_T_DELTA PWM_OUTPUT_DELTA_T_MAXIMUM - PWM_OUTPUT_DELTA_T_MINIMUM
 
 class PwmOutput
 {
 private:
+    ComponentState *componentState;
+
+    uint16_t pumpPwmLevelValues[3] = {PWM_OUTPUT_PUMP_LEVEL_1_PWM, PWM_OUTPUT_PUMP_LEVEL_2_PWM, PWM_OUTPUT_PUMP_LEVEL_3_PWM};
+
     uint16_t nextValue;
+    float delta_T;
 
 public:
-    PwmOutput();
+    PwmOutput(ComponentState *componentState);
     void initTimer();
-    void updatePumpPwm(uint16_t value);
+    void updatePumpLevel(uint8_t value);
+    void updatePumpPercentage(uint16_t pwmValue);
     void updateFanPwm(uint16_t value);
-    void updateTemperature(float tempterature);
+    void updateFanPercentage(uint16_t pwmValue);
+    void update();
 };
+
+#endif

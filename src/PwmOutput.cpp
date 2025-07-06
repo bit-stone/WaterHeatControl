@@ -1,7 +1,8 @@
 #include "PwmOutput.h"
 
-PwmOutput::PwmOutput()
+PwmOutput::PwmOutput(ComponentState *componentState)
 {
+    this->componentState = componentState;
 }
 
 void PwmOutput::initTimer()
@@ -15,12 +16,12 @@ void PwmOutput::initTimer()
     PORTMUX.TCAROUTEA = PORTMUX_TCA0_PORTA_gc;
 
     // set period and clock div
-    TCA0_SINGLE_PER = PWM_MAX_VALUE - 1;
+    TCA0_SINGLE_PER = PWM_OUTPUT_MAX_VALUE - 1;
     TCA0_SINGLE_CTRLA = 0;
 
     // set default cmp to 100%
-    TCA0_SINGLE_CMP0 = PWM_MAX_VALUE;
-    TCA0_SINGLE_CMP1 = PWM_MAX_VALUE;
+    TCA0_SINGLE_CMP0 = PWM_OUTPUT_MAX_VALUE;
+    TCA0_SINGLE_CMP1 = PWM_OUTPUT_MAX_VALUE;
 
     // enable two compare channel
     TCA0_SINGLE_CTRLB |= TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1_bm;
@@ -32,58 +33,72 @@ void PwmOutput::initTimer()
     TCA0_SINGLE_CTRLA |= TCA_SINGLE_ENABLE_bm;
 }
 
-void PwmOutput::updatePumpPwm(uint16_t value)
+void PwmOutput::updatePumpLevel(uint8_t level)
 {
-    if (value < PUMP_PWM_MINIMAL_VALUE)
+    if (level <= 1)
     {
-        value = PUMP_PWM_MINIMAL_VALUE;
+        level = 1;
     }
 
-    if (value > PWM_MAX_VALUE)
+    if (level > 3)
     {
-        value = PWM_MAX_VALUE;
+        level = 3;
     }
 
-    TCA0_SINGLE_CMP0 = value;
+    TCA0_SINGLE_CMP0 = this->pumpPwmLevelValues[level];
+    this->updatePumpPercentage(this->pumpPwmLevelValues[level]);
+}
+
+void PwmOutput::updatePumpPercentage(uint16_t pwmValue)
+{
+    this->componentState->lastPumpPWMPercentage = (int)((float)(pwmValue / PWM_OUTPUT_MAX_VALUE) * 100);
 }
 
 void PwmOutput::updateFanPwm(uint16_t value)
 {
-    if (value < FAN_PWM_MINIMAL_VALUE)
+    if (value < PWM_OUTPUT_FAN_MIN_VALUE)
     {
-        value = FAN_PWM_MINIMAL_VALUE;
+        value = PWM_OUTPUT_FAN_MIN_VALUE;
     }
 
-    if (value > PWM_MAX_VALUE)
+    if (value > PWM_OUTPUT_FAN_MAX_VALUE)
     {
-        value = PWM_MAX_VALUE;
+        value = PWM_OUTPUT_FAN_MAX_VALUE;
     }
     TCA0_SINGLE_CMP1 = value;
+    this->updateFanPercentage(value);
 }
 
-void PwmOutput::updateTemperature(float temperature)
+void PwmOutput::updateFanPercentage(uint16_t pwmValue)
 {
-    if (temperature < TEMPERATURE_MIN)
+    this->componentState->lastFanPWMPercentage = (int)((float)(pwmValue / PWM_OUTPUT_MAX_VALUE) * 100);
+}
+
+void PwmOutput::update()
+{
+    this->delta_T = this->componentState->delta_T;
+
+    if (this->delta_T < PWM_OUTPUT_DELTA_T_MINIMUM)
     {
         // go minimal values
-        updateFanPwm(FAN_PWM_MINIMAL_VALUE);
-        updatePumpPwm(PUMP_PWM_MINIMAL_VALUE);
+        updateFanPwm(PWM_OUTPUT_FAN_MIN_VALUE);
+        updatePumpLevel(1);
     }
-    else if (temperature < TEMPERATURE_MAX)
+    else if (this->delta_T > PWM_OUTPUT_DELTA_T_MAXIMUM)
     {
-        // linear interpolation
-        nextValue = (((temperature - TEMPERATURE_MIN) * PUMP_PWM_DELTA) / TEMPERATURE_DELTA) + PUMP_PWM_MINIMAL_VALUE;
-        updatePumpPwm(nextValue);
+        // go full blast on fans
+        updateFanPwm(PWM_OUTPUT_FAN_MAX_VALUE);
 
-        nextValue = (((temperature - TEMPERATURE_MIN) * FAN_PWM_DELTA) / TEMPERATURE_DELTA) + FAN_PWM_MINIMAL_VALUE;
-        updateFanPwm(nextValue);
+        // go highest level on pump
+        updatePumpLevel(3);
     }
     else
     {
-        // go full blast on fans
-        updateFanPwm(FAN_PWM_MAXIMAL_VALUE);
+        // single level for pump
+        updatePumpLevel(2);
 
-        // go half power on pump
-        updatePumpPwm(PUMP_PWM_MAXIMAL_VALUE);
+        // linear interpolation
+        nextValue = (((this->delta_T - PWM_OUTPUT_DELTA_T_MINIMUM) * PWM_OUTPUT_FAN_PWM_DELTA) / PWM_OUTPUT_DELTA_T_DELTA) + PWM_OUTPUT_FAN_MIN_VALUE;
+        updateFanPwm(nextValue);
     }
 }

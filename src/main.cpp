@@ -1,96 +1,97 @@
 #include <Arduino.h>
-#include <AnalogReader.h>
 #include <util/delay.h>
 
-#include "PwmOutput.h"
-#include "ResistanceTemperatureConverter.h"
-#include "Display.h"
-#include "LedOut.h"
+#include "ComponentState.h"
+#include "AnalogReader.h"
 
+#include "TemperatureReader.h"
+
+#include "PwmOutput.h"
+#include "RpmWatchdog.h"
+
+#include "display/DisplayButton.h"
+#include "display/LedArray.h"
+#include "display/DisplayController.h"
+
+ComponentState componentState;
 AnalogReader analogReader;
-PwmOutput pwmOutput;
-Display upperDisplay;
-Display lowerDisplay;
+
+TemperatureReader temperatureReader = TemperatureReader(analogReader, &componentState);
+PwmOutput pwmOutput = PwmOutput(&componentState);
+
+RpmWatchdog rpmWatchdog;
+
+LedArray ledArray;
+
+DisplayController displayController;
+
+DisplayButton displayButton;
 
 uint16_t input = 0;
-float referenceVolts = 0.0f;
-float waterTempVolts = 0.0f;
-float airTempVolts = 0.0f;
-
-float waterTemperature = 0.0f;
-float airTemperature = 0.0f;
-
-float delta_T = 0.0f;
-
-uint16_t waterTempResistance = 0;
-uint16_t airTempResistance = 0;
 
 void setup()
 {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
+  // this is only for debugging. disable for production.
+  // Serial.begin(115200);
 
-  init_led_output();
+  // init the debug output on PE2
+  PORTE_DIRSET = (1 << PIN2_bp);
 
-  upperDisplay.setPortData(
-      &PORTB_OUTSET,
-      &PORTB_OUTCLR,
-      &PORTB_DIRSET,
-      &PORTB_DIRCLR,
-      &PORTB_PIN0CTRL,
-      &PORTB_IN,
-      1,
-      0);
+  // LED Array needs to be first, as it shows error states :)
+  ledArray.init();
 
-  lowerDisplay.setPortData(
-      &PORTE_OUTSET,
-      &PORTE_OUTCLR,
-      &PORTE_DIRSET,
-      &PORTE_DIRCLR,
-      &PORTE_PIN0CTRL,
-      &PORTE_IN,
-      1,
-      0);
+  // init display button
+  displayButton.init();
+
+  // create a simple tick timer with 125ms ticks using the Real Time Counter
+  // enable the rtc clock
+  RTC_CTRLA |= (1 << RTC_RTCEN_bp);
+
+  // setting Period
+  RTC_PITCTRLA |= RTC_PERIOD_CYC256_gc | RTC_PITEN_bm;
+
+  // enable periodic interrupt
+  RTC_PITINTCTRL |= RTC_PI_bm;
+
+  rpmWatchdog.init();
 
   analogReader.initReader();
   pwmOutput.initTimer();
-  upperDisplay.initDisplay();
-  lowerDisplay.initDisplay();
+
+  displayController.init();
+
+  _delay_ms(500);
+
+  ledArray.clearAllLed();
+  ledArray.show();
 
   sei();
-
-  _delay_ms(1000);
 }
 
 void loop()
 {
-  airTempVolts = analogReader.getVoltage(2);
-  waterTempVolts = analogReader.getVoltage(1);
-  referenceVolts = analogReader.getVoltage(0);
-
-  Serial.println(referenceVolts);
-  Serial.println(airTempVolts);
-  Serial.println(waterTempVolts);
-  Serial.println("---");
-
-  waterTempResistance = ((referenceVolts - waterTempVolts) * 10000) / (waterTempVolts);
-  airTempResistance = ((referenceVolts - airTempVolts) * 10000) / (airTempVolts);
-
-  waterTemperature = interpolateTempFromResistance(waterTempResistance);
-  airTemperature = interpolateTempFromResistance(airTempResistance);
-
-  upperDisplay.updateNumber(waterTemperature);
-  lowerDisplay.updateNumber(airTemperature);
-
-  delta_T = waterTemperature - airTemperature;
-
-  applyDeltaT(delta_T);
-  pwmOutput.updateTemperature(waterTemperature);
-
-  _delay_ms(200);
+  temperatureReader.update();
+  _delay_ms(100);
 }
 
 ISR(ADC0_RESRDY_vect)
 {
   analogReader.handleResult();
+}
+
+ISR(PORTF_PORT_vect)
+{
+  rpmWatchdog.incrementCount();
+
+  // CRITICAL: Clear interrupt flag!
+  PORTF_INTFLAGS |= (1 << PIN5_bp);
+}
+
+ISR(RTC_PIT_vect)
+{
+  rpmWatchdog.tick();
+  displayButton.handleTick();
+
+  // CRITICAL: Clear interrupt flag!
+  RTC_PITINTFLAGS |= (1 << RTC_PI_bp);
 }

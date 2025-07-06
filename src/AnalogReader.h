@@ -2,13 +2,16 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
+#ifndef _BITSTONE_ANALOG_READER
+#define _BITSTONE_ANALOG_READER
+
 // #define REF_R1 10.0f
 // #define REF_R2 10.0f
 // #define REF_FACTOR (REF_R2 / (REF_R1 + REF_R2))
 
-#define VOLTAGE_FACTOR 5.0f
+#define ANALOG_READER_VOLTAGE_FACTOR 5.0f
 
-// the number of adc channels that are being scanned. 
+// the number of adc channels that are being scanned.
 // Currently, the channels ares used for:
 
 // Channel 0: Reference Voltage - measuring the supply voltage
@@ -21,7 +24,7 @@
 // Channel 7: NOT USED
 // Channel 8: NOT USED
 // Channel 9: NOT USED
-#define MAX_CHANNEL 2
+#define ANALOG_READER_MAX_CHANNEL 2
 
 class AnalogReader
 {
@@ -29,6 +32,7 @@ private:
     uint16_t analogValues[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     uint8_t currentChannel = 0;
     uint8_t lastChannel = 0;
+
 public:
     AnalogReader();
     void initReader();
@@ -36,3 +40,5 @@ public:
     void handleResult();
     float getVoltage(uint8_t channel);
 };
+
+#endif

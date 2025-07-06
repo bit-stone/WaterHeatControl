@@ -30,15 +30,6 @@ void AnalogReader::initReader()
     ADC0.INTCTRL |= (1 << ADC_RESRDY_bp); // enable result ready interrupt
 
     ADC0.COMMAND |= (1 << ADC_STCONV_bp); // start first conversion
-
-    Serial.println("ADC0 CTRLA");
-    Serial.println(ADC0.CTRLA);
-
-    Serial.println("ADC0 CTRLB");
-    Serial.println(ADC0.CTRLB);
-
-    Serial.println("ADC0 CTRLC");
-    Serial.println(ADC0.CTRLC);
 }
 
 uint16_t AnalogReader::getValue(uint8_t channel)
@@ -51,7 +42,7 @@ float AnalogReader::getVoltage(uint8_t channel)
     float result = 0.0f;
     result = this->analogValues[channel];
     result = result / 1023.0;
-    result *= VOLTAGE_FACTOR;
+    result *= ANALOG_READER_VOLTAGE_FACTOR;
     return result;
 }
 
@@ -63,7 +54,7 @@ void AnalogReader::handleResult()
 
     // increment current channel for next handle
     this->currentChannel++;
-    if (this->currentChannel > MAX_CHANNEL)
+    if (this->currentChannel > ANALOG_READER_MAX_CHANNEL)
     {
         this->currentChannel = 0;
     }
