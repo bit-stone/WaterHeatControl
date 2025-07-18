@@ -19,6 +19,8 @@ struct ComponentState
 
     uint8_t displayMode = 0;
 
+    bool rpmInitDelayOver = false;
+
     bool error_noPumpRpm = false;
     bool error_generic = false;
 };

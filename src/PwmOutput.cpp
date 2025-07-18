@@ -45,8 +45,8 @@ void PwmOutput::updatePumpLevel(uint8_t level)
         level = 3;
     }
 
-    TCA0_SINGLE_CMP0 = this->pumpPwmLevelValues[level];
-    this->updatePumpPercentage(this->pumpPwmLevelValues[level]);
+    TCA0_SINGLE_CMP0 = this->pumpPwmLevelValues[level - 1];
+    this->updatePumpPercentage(this->pumpPwmLevelValues[level - 1]);
 }
 
 void PwmOutput::updatePumpPercentage(uint16_t pwmValue)
@@ -81,22 +81,20 @@ void PwmOutput::update()
     if (this->delta_T < PWM_OUTPUT_DELTA_T_MINIMUM)
     {
         // go minimal values
-        updateFanPwm(PWM_OUTPUT_FAN_MIN_VALUE);
         updatePumpLevel(1);
+        updateFanPwm(PWM_OUTPUT_FAN_MIN_VALUE);
     }
     else if (this->delta_T > PWM_OUTPUT_DELTA_T_MAXIMUM)
     {
-        // go full blast on fans
-        updateFanPwm(PWM_OUTPUT_FAN_MAX_VALUE);
-
         // go highest level on pump
         updatePumpLevel(3);
+        // go full blast on fans
+        updateFanPwm(PWM_OUTPUT_FAN_MAX_VALUE);
     }
     else
     {
         // single level for pump
         updatePumpLevel(2);
-
         // linear interpolation
         nextValue = (((this->delta_T - PWM_OUTPUT_DELTA_T_MINIMUM) * PWM_OUTPUT_FAN_PWM_DELTA) / PWM_OUTPUT_DELTA_T_DELTA) + PWM_OUTPUT_FAN_MIN_VALUE;
         updateFanPwm(nextValue);

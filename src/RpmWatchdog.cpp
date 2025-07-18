@@ -33,6 +33,16 @@ void RpmWatchdog::tick()
 {
     tickCount++;
 
+    if (componentState->rpmInitDelayOver == false)
+    {
+        componentState->rpmInitDelayOver++;
+
+        if (componentState->rpmInitDelayOver++ > _BITSTONE_RPM_WATCHDOG_INITAL_STARTUP_TICKS)
+        {
+            componentState->rpmInitDelayOver = true;
+        }
+    }
+
     if (tickCount >= 128)
     {
         tickCount = 0;
@@ -42,7 +52,7 @@ void RpmWatchdog::tick()
 
         componentState->lastPumpRpm = lastRpm;
 
-        if (lastRpm == 0)
+        if (lastRpm == 0 && initialStartupDelayCompleted == true)
         {
             this->componentState->error_noPumpRpm = true;
         }

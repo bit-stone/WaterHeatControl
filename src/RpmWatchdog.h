@@ -5,10 +5,15 @@
 #ifndef _BITSTONE_RPM_WATCHDOG
 #define _BITSTONE_RPM_WATCHDOG
 
+#define _BITSTONE_RPM_WATCHDOG_INITAL_STARTUP_TICKS 10 * 128
+
 class RpmWatchdog
 {
 private:
     ComponentState *componentState;
+
+    uint8_t initialStartupDelayCompleted = false;
+    uint16_t initialStartupTicks = 0;
 
     uint16_t currentCount = 0;
     uint16_t lastCount = 0;
