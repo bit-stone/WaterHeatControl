@@ -34,7 +34,7 @@ uint16_t input = 0;
 void setup()
 {
   // this is only for debugging. disable for production.
-  Serial.begin(115200);
+  // Serial.begin(115200);
 
   // init the debug output on PE2
   PORTE_DIRSET = (1 << PIN2_bp);

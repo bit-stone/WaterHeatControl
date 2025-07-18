@@ -156,7 +156,7 @@ void SegmentDisplay::show()
     }
 
     this->startCondition();
-    this->sendByte(SEGMENT_DISPLAY_ON_COMMAND | SEGMENT_DISPLAY_BRIGHTNESS_MASK | 0b00000001);
+    this->sendByte(SEGMENT_DISPLAY_ON_COMMAND | SEGMENT_DISPLAY_BRIGHTNESS_MASK | 0b00000011);
     this->stopCondition();
 }
 

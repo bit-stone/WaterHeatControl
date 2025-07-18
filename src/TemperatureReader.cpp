@@ -20,8 +20,6 @@ void TemperatureReader::update()
 
     this->delta_T = this->waterTemperature - this->airTemperature;
 
-    Serial.println(this->delta_T);
-
     // TODO add warnings and errors about delta_T
 
     this->componentState->waterTemperature = this->waterTemperature;

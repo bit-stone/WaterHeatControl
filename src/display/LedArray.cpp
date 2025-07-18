@@ -105,15 +105,15 @@ void LedArray::update()
     float delta_T = this->componentState->delta_T;
 
     // always reset to off first
-    if (delta_T < 2.0)
+    if (delta_T < 5.0)
     {
         ledState |= (0b00000000);
     }
-    else if (delta_T < 6.0)
+    else if (delta_T < 10.0)
     {
         ledState |= (0b10000000);
     }
-    else if (delta_T < 10.0)
+    else if (delta_T < 20.0)
     {
         ledState |= (0b11000000);
     }
@@ -139,15 +139,15 @@ void LedArray::update()
         break;
     }
 
-    Serial.println(ledState, BIN);
-
     // last, two error LEDs. If their flag is set, set them to blinking,
     // otherwise off.
-    if(this->componentState->error_noPumpRpm == true) {
+    if (this->componentState->error_noPumpRpm == true)
+    {
         ledState |= (1 << 0);
     }
 
-    if(this->componentState->error_generic == true) {
+    if (this->componentState->error_generic == true)
+    {
         ledState |= (1 << 1);
     }
 
