@@ -35,9 +35,9 @@ void RpmWatchdog::tick()
 
     if (componentState->rpmInitDelayOver == false)
     {
-        componentState->rpmInitDelayOver++;
+        componentState->rpmInitDelayCount++;
 
-        if (componentState->rpmInitDelayOver++ > _BITSTONE_RPM_WATCHDOG_INITAL_STARTUP_TICKS)
+        if (componentState->rpmInitDelayCount++ > _BITSTONE_RPM_WATCHDOG_INITAL_STARTUP_TICKS)
         {
             componentState->rpmInitDelayOver = true;
         }
