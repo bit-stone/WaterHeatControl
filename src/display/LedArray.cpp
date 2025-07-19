@@ -105,15 +105,15 @@ void LedArray::update()
     float delta_T = this->componentState->delta_T;
 
     // always reset to off first
-    if (delta_T < 10.0)
+    if (delta_T < 8.0)
     {
         ledState |= (0b00000000);
     }
-    else if (delta_T < 15.0)
+    else if (delta_T < 13.0)
     {
         ledState |= (0b10000000);
     }
-    else if (delta_T < 20.0)
+    else if (delta_T < 16.0)
     {
         ledState |= (0b11000000);
     }
