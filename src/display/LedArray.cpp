@@ -1,4 +1,5 @@
 #include <display/LedArray.h>
+#include "LedArray.h"
 
 LedArray::LedArray(ComponentState *componentState)
 {
@@ -89,8 +90,30 @@ void LedArray::show()
     LedArray::pulseEnable();
 }
 
+uint8_t LedArray::getLevelForDeltaT(float delta_T)
+{
+    // always reset to off first
+    if (delta_T < LED_LEVEL_1_DELTA_T)
+    {
+        return 1; // all off
+    }
+    else if (delta_T < LED_LEVEL_2_DELTA_T)
+    {
+        return 2; // first level shown
+    }
+    else if (delta_T < LED_LEVEL_3_DELTA_T)
+    {
+        return 3; // second level shown
+    }
+    else
+    {
+        return 4; // all level shown
+    }
+}
+
 void LedArray::update()
 {
+    this->lastLedState = this->ledState;
     // clear all led so nothing "lingers"
     this->clearAllLed();
 
@@ -103,23 +126,73 @@ void LedArray::update()
     // two led on - <10.0 degrees
     // three led on - > 10.0
     float delta_T = this->componentState->delta_T;
+    this->deltaTLevel = this->getLevelForDeltaT(delta_T);
 
-    // always reset to off first
-    if (delta_T < 8.0)
+    // initial (empty) value, set the values according to current reading
+    if (this->lastDeltaTLevel == 0)
     {
+        this->lastDeltaTLevel = this->deltaTLevel;
+    }
+
+    if (this->lastDeltaTLevel != this->deltaTLevel)
+    {
+        switch (this->lastDeltaTLevel)
+        {
+        case 1:
+            if (delta_T > (LED_LEVEL_1_DELTA_T + DELTA_T_LEVEL_SWITCH_DIFF))
+            {
+                this->deltaTLevel = 2;
+                this->lastDeltaTLevel = this->deltaTLevel;
+            }
+            break;
+        case 2:
+            if (delta_T > (LED_LEVEL_2_DELTA_T + DELTA_T_LEVEL_SWITCH_DIFF))
+            {
+                this->deltaTLevel = 3;
+                this->lastDeltaTLevel = this->deltaTLevel;
+            }
+            if (delta_T < (LED_LEVEL_1_DELTA_T - DELTA_T_LEVEL_SWITCH_DIFF))
+            {
+                this->deltaTLevel = 1;
+                this->lastDeltaTLevel = this->deltaTLevel;
+            }
+            break;
+        case 3:
+            if (delta_T > (LED_LEVEL_3_DELTA_T + DELTA_T_LEVEL_SWITCH_DIFF))
+            {
+                this->deltaTLevel = 4;
+                this->lastDeltaTLevel = this->deltaTLevel;
+            }
+            if (delta_T < (LED_LEVEL_2_DELTA_T - DELTA_T_LEVEL_SWITCH_DIFF))
+            {
+                this->deltaTLevel = 2;
+                this->lastDeltaTLevel = this->deltaTLevel;
+            }
+            break;
+        default:
+            if (delta_T < (LED_LEVEL_3_DELTA_T - DELTA_T_LEVEL_SWITCH_DIFF))
+            {
+                this->deltaTLevel = 3;
+                this->lastDeltaTLevel = this->deltaTLevel;
+            }
+            break;
+        }
+    }
+
+    switch (this->lastDeltaTLevel)
+    {
+    case 1:
         ledState |= (0b00000000);
-    }
-    else if (delta_T < 13.0)
-    {
+        break;
+    case 2:
         ledState |= (0b10000000);
-    }
-    else if (delta_T < 16.0)
-    {
+        break;
+    case 3:
         ledState |= (0b11000000);
-    }
-    else
-    {
+        break;
+    default:
         ledState |= (0b11100000);
+        break;
     }
 
     // next, display mode. is easy, just show the led for the mode
@@ -151,6 +224,22 @@ void LedArray::update()
         ledState |= (1 << 1);
     }
 
-    // shift them out
-    this->show();
+    // shift them out (but only on update or when forced)
+    if (this->lastLedState != this->ledState)
+    {
+        this->forceUpdateTicks = 0;
+        this->show();
+    }
+    else
+    {
+        this->forceUpdateTicks++;
+
+        // there should be a forced update every so often
+        // otherwise if no changes are detected, glitches might solidify forever
+        if (this->forceUpdateTicks >= FORCE_UPDATE_TICK_COUNT)
+        {
+            this->forceUpdateTicks = 0;
+            this->show();
+        }
+    }
 }
