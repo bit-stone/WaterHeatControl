@@ -28,7 +28,7 @@ void AlarmBuzzer::tick()
     if (componentState->lastPumpRpm == 0 && componentState->rpmInitDelayOver == true)
     {
         this->alarmEnableCount++;
-        if (this->alarmEnableCount > 250)
+        if (this->alarmEnableCount > 500)
         {
             this->enableAlarm();
         }
