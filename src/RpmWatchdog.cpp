@@ -52,7 +52,7 @@ void RpmWatchdog::tick()
 
         componentState->lastPumpRpm = lastRpm;
 
-        if (lastRpm == 0 && initialStartupDelayCompleted == true)
+        if (lastRpm == 0 && componentState->rpmInitDelayCount == true)
         {
             this->componentState->error_noPumpRpm = true;
         }
