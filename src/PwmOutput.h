@@ -9,8 +9,8 @@
 
 #define PWM_OUTPUT_MAX_VALUE 640
 
-#define PWM_OUTPUT_PUMP_LEVEL_1_PWM 400
-#define PWM_OUTPUT_PUMP_LEVEL_2_PWM 450
+#define PWM_OUTPUT_PUMP_LEVEL_1_PWM 300
+#define PWM_OUTPUT_PUMP_LEVEL_2_PWM 300
 #define PWM_OUTPUT_PUMP_LEVEL_3_PWM 500 // no max value needed, pump is quite powerful
 
 #define PWM_OUTPUT_FAN_MIN_VALUE 130
