@@ -45,7 +45,8 @@ void setup()
   // init display button
   displayButton.init();
 
-  // create a simple tick timer with 125ms ticks using the Real Time Counter
+  // create a simple tick timer with 128Hz ticks using the Real Time Counter
+  // Note: This is based on a 2^15 base clock (32_768) - not the cpu clock.
   // enable the rtc clock
   RTC_CTRLA |= (1 << RTC_RTCEN_bp);
 

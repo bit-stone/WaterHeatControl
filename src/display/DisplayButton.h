@@ -15,7 +15,7 @@ private:
     ComponentState *componentState;
 
     uint8_t lastButtonState = DISPLAY_BUTTON_STATE_OPEN;
-    uint8_t currentButtonState = DISPLAY_BUTTON_STATE_OPEN;
+    volatile uint8_t currentButtonState = DISPLAY_BUTTON_STATE_OPEN;
     uint8_t buttonTickCount = 0;
 
 public:

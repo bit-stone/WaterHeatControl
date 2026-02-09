@@ -12,11 +12,19 @@ void TemperatureReader::update()
     this->waterTempVolts = this->analogReader->getVoltage(1);
     this->referenceVolts = this->analogReader->getVoltage(0);
 
-    waterTempResistance = ((referenceVolts - waterTempVolts) * 10000) / (waterTempVolts);
-    airTempResistance = ((referenceVolts - airTempVolts) * 10000) / (airTempVolts);
+    const float eps = 0.01f;
+    if (this->airTempVolts < eps || this->waterTempVolts < eps)
+    {
+        // avoid division by zero, set to some default value
+        this->waterTemperature = 1.0f;
+        this->airTemperature = 1.0f;
+    } else {
+        waterTempResistance = ((referenceVolts - waterTempVolts) * 10000) / (waterTempVolts);
+        airTempResistance = ((referenceVolts - airTempVolts) * 10000) / (airTempVolts);
 
-    this->waterTemperature = interpolateTempFromResistance(waterTempResistance);
-    this->airTemperature = interpolateTempFromResistance(airTempResistance);
+        this->waterTemperature = interpolateTempFromResistance(waterTempResistance);
+        this->airTemperature = interpolateTempFromResistance(airTempResistance);
+    }
 
     this->delta_T = this->waterTemperature - this->airTemperature;
 

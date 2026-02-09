@@ -24,7 +24,7 @@ void PwmOutput::initTimer()
     TCA0_SINGLE_CMP1 = PWM_OUTPUT_MAX_VALUE;
 
     // enable two compare channel
-    TCA0_SINGLE_CTRLB |= TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1_bm;
+    TCA0_SINGLE_CTRLB |= TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1EN_bm;
 
     // set waveform generation mode
     TCA0_SINGLE_CTRLB |= TCA_SINGLE_WGMODE_SINGLESLOPE_gc;

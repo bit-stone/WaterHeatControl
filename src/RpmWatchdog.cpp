@@ -1,5 +1,14 @@
 #include <RpmWatchdog.h>
 
+/**
+ * The RpmWatchdog is responsible for gathering the RPM data of the 
+ * pump as well as the additional flow sensor within the loop.
+ * Important:
+ * This will only set visible lights on error. The acustic alarm is 
+ * handled by AlarmBuzzer, which is responsible for reading the data
+ * from this.
+ */
+
 RpmWatchdog::RpmWatchdog(ComponentState *componentState)
 {
     this->componentState = componentState;
@@ -20,8 +29,6 @@ void RpmWatchdog::init()
 
     // detect rising edge
     PORTF_PIN5CTRL |= PORT_ISC_FALLING_gc;
-
-    PORTD_DIRSET = (1 << PIN5_bp);
 }
 
 void RpmWatchdog::incrementCount()
@@ -37,18 +44,18 @@ void RpmWatchdog::tick()
     {
         componentState->rpmInitDelayCount++;
 
-        if (componentState->rpmInitDelayCount++ > _BITSTONE_RPM_WATCHDOG_INITAL_STARTUP_TICKS)
+        if (componentState->rpmInitDelayCount > _BITSTONE_RPM_WATCHDOG_INITAL_STARTUP_TICKS)
         {
             componentState->rpmInitDelayOver = true;
         }
     }
 
-    if (tickCount >= 128)
+    if (tickCount >= _BITSTONE_RPM_WATCHDOG_TICK_WINDOW)
     {
         tickCount = 0;
         lastCount = currentCount;
         currentCount = 0;
-        lastRpm = (lastCount * 60) >> 1;
+        lastRpm = (uint32_t) ((lastCount * 60)) >> 1;
 
         componentState->lastPumpRpm = lastRpm;
 

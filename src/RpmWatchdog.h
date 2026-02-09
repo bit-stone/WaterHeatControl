@@ -6,16 +6,14 @@
 #define _BITSTONE_RPM_WATCHDOG
 
 #define _BITSTONE_RPM_WATCHDOG_INITAL_STARTUP_TICKS 10 * 128
+#define _BITSTONE_RPM_WATCHDOG_TICK_WINDOW 128  // 1 second at 128Hz
 
 class RpmWatchdog
 {
 private:
     ComponentState *componentState;
 
-    uint8_t initialStartupDelayCompleted = false;
-    uint16_t initialStartupTicks = 0;
-
-    uint16_t currentCount = 0;
+    volatile uint16_t currentCount = 0;  // Modified by ISR
     uint16_t lastCount = 0;
     uint16_t lastRpm = 10;
     uint16_t tickCount = 0;
