@@ -8,43 +8,43 @@ AlarmBuzzer::AlarmBuzzer(ComponentState *componentState)
 void AlarmBuzzer::init()
 {
     PORTF_DIRSET = (1 << PIN4_bp);
-    this->disableAlarm();
+    this->clearAlarmBeeping();
 }
 
-void AlarmBuzzer::enableAlarm()
+void AlarmBuzzer::setAlarmBeeping()
 {
-    this->alarmEnabled = true;
+    this->alarmIsBeeping = true;
     PORTF_OUTSET = (1 << PIN4_bp);
 }
 
-void AlarmBuzzer::disableAlarm()
+void AlarmBuzzer::clearAlarmBeeping()
 {
-    this->alarmEnabled = false;
+    this->alarmIsBeeping = false;
     PORTF_OUTCLR = (1 << PIN4_bp);
 }
 
 void AlarmBuzzer::tick()
 {
-    if (componentState->lastPumpRpm == 0 && componentState->rpmInitDelayOver == true)
+    
+    if (!this->alarmIsBeeping)
     {
-        this->alarmEnableCount++;
-        if (this->alarmEnableCount > 500)
+        // check if the alarm should be beeping
+        if (componentState->lastPumpRpm == 0 && componentState->rpmInitDelayOver == true)
         {
-            this->enableAlarm();
+            this->alarmEnableCount++;
+            if (this->alarmEnableCount > 500)
+            {
+                this->setAlarmBeeping();
+            }
+        }
+        else
+        {
+            this->alarmEnableCount = 0;
         }
     }
     else
     {
-        this->alarmEnableCount = 0;
-    }
-
-    if (this->alarmEnabled == false)
-    {
-        this->alarmTickCount = 0;
-        PORTF_OUTCLR = (1 << PIN4_bp);
-    }
-    else
-    {
+        // handle beeping pattern
         this->alarmTickCount++;
         if (this->alarmTickCount >= 16)
         {

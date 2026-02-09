@@ -10,16 +10,16 @@ class AlarmBuzzer
 private:
     ComponentState *componentState;
 
-    uint8_t alarmEnableCount = 0;
-
+    uint16_t alarmEnableCount = 0;
     uint8_t alarmTickCount = 0;
-    bool alarmEnabled = false;
+    
+    bool alarmIsBeeping = false;
 
 public:
     AlarmBuzzer(ComponentState *componentState);
     void init();
-    void enableAlarm();
-    void disableAlarm();
+    void setAlarmBeeping();
+    void clearAlarmBeeping();
     void tick();
 };
 
