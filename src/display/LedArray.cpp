@@ -17,7 +17,22 @@ void LedArray::init()
     PORTD_OUTCLR = PIN5_bm | PIN4_bm | PIN3_bm;
 
     // turn all on
-    ledState = 0b11111111;
+    LedArray::setAllLed();
+    LedArray::show();
+    _delay_ms(100);
+    LedArray::clearAllLed();
+    LedArray::show();
+    _delay_ms(100);
+    LedArray::setAllLed();
+    LedArray::show();
+    _delay_ms(100);
+    LedArray::clearAllLed();
+    LedArray::show();
+    _delay_ms(100);
+    LedArray::setAllLed();
+    LedArray::show();
+    _delay_ms(100);
+    LedArray::clearAllLed();
     LedArray::show();
 
     // ledState is used like this:
@@ -28,7 +43,12 @@ void LedArray::init()
 
 void LedArray::clearAllLed()
 {
-    ledState = 0b0;
+    this->ledState = 0b0;
+}
+
+void LedArray::setAllLed()
+{
+    this->ledState = 0b11111111;
 }
 
 void LedArray::setDataLow()
@@ -77,7 +97,7 @@ void LedArray::show()
 {
     for (k = 0; k < 8; k++)
     {
-        if (ledState & (1 << (7 - k)))
+        if (this->ledState & (1 << (7 - k)))
         {
             LedArray::shiftHighOut();
         }
@@ -182,16 +202,16 @@ void LedArray::update()
     switch (this->lastDeltaTLevel)
     {
     case 1:
-        ledState |= (0b00000000);
+        this->ledState |= (0b00000000);
         break;
     case 2:
-        ledState |= (0b10000000);
+        this->ledState |= (0b10000000);
         break;
     case 3:
-        ledState |= (0b11000000);
+        this->ledState |= (0b11000000);
         break;
     default:
-        ledState |= (0b11100000);
+        this->ledState |= (0b11100000);
         break;
     }
 
@@ -206,7 +226,7 @@ void LedArray::update()
     case 0:
     case 1:
     case 2:
-        ledState |= (1 << (2 + this->componentState->displayMode));
+        this->ledState |= (1 << (2 + this->componentState->displayMode));
         break;
     default:
         break;
@@ -216,12 +236,12 @@ void LedArray::update()
     // otherwise off.
     if (this->componentState->error_noPumpRpm == true)
     {
-        ledState |= (1 << 0);
+        this->ledState |= (1 << 0);
     }
 
     if (this->componentState->error_generic == true)
     {
-        ledState |= (1 << 1);
+        this->ledState |= (1 << 1);
     }
 
     // shift them out (but only on update or when forced)

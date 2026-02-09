@@ -37,6 +37,8 @@ private:
     void pulseClock();
     void pulseEnable();
     void clearAllLed();
+    void setAllLed();
+
 
 public:
     LedArray(ComponentState *componentState);

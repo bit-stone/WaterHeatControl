@@ -7,7 +7,7 @@ AnalogReader::AnalogReader()
 void AnalogReader::initReader()
 {
     // configure pins: set PIN0, PIN1 and PIN2 as inputs
-    PORTD_DIRCLR |= (1 << PIN0_bp) | (1 << PIN1_bp) | (1 << PIN2_bp);
+    PORTD_DIRCLR = (1 << PIN0_bp) | (1 << PIN1_bp) | (1 << PIN2_bp);
 
     // set internal voltage reference to 2.5V
     VREF.CTRLA = 0b00000000;
