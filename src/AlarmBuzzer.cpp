@@ -1,5 +1,10 @@
 #include <AlarmBuzzer.h>
 
+/**
+ * This module checks the pump rpm. If it is 0 for too many ticks, it will enable
+ * a very annoying alarm that cannot be canceled without resetting the chip
+ */
+
 AlarmBuzzer::AlarmBuzzer(ComponentState *componentState)
 {
     this->componentState = componentState;

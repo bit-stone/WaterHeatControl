@@ -1,5 +1,12 @@
 #include <AnalogReader.h>
 
+/**
+ * This module constantly measures the analog values
+ * and writes them to component state. It iterates over all channels in order
+ * 
+ * no error codes
+ */
+
 AnalogReader::AnalogReader()
 {
 }

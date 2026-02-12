@@ -1,5 +1,13 @@
 #include "PwmOutput.h"
 
+/**
+ * This module reads the last delta_T from componentState and 
+ * updates pump pwm and fan pwm according to their rules
+ * it also updates the fan / pump percentages to display them
+ * 
+ * does not have any error codes
+ */
+
 PwmOutput::PwmOutput(ComponentState *componentState)
 {
     this->componentState = componentState;

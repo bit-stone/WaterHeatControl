@@ -16,22 +16,34 @@ void LedArray::init()
     PORTD_DIRSET = PIN5_bm | PIN4_bm | PIN3_bm;
     PORTD_OUTCLR = PIN5_bm | PIN4_bm | PIN3_bm;
 
-    // turn all on
+    // turn all on briefly
     LedArray::setAllLed();
     LedArray::show();
-    _delay_ms(100);
+    _delay_ms(400);
     LedArray::clearAllLed();
     LedArray::show();
-    _delay_ms(100);
-    LedArray::setAllLed();
+  
+    // make little bottom to top animation
+    this->ledState = 0b10010000;
     LedArray::show();
-    _delay_ms(100);
-    LedArray::clearAllLed();
+    _delay_ms(250);
+
+    this->ledState = 0b00000001;
     LedArray::show();
-    _delay_ms(100);
-    LedArray::setAllLed();
+    _delay_ms(250);
+
+    this->ledState = 0b01001000;
     LedArray::show();
-    _delay_ms(100);
+    _delay_ms(250);
+
+    this->ledState = 0b00000010;
+    LedArray::show();
+    _delay_ms(250);
+
+    this->ledState = 0b00100100;
+    LedArray::show();
+    _delay_ms(250);
+
     LedArray::clearAllLed();
     LedArray::show();
 

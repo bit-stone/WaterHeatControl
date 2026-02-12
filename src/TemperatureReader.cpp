@@ -1,5 +1,15 @@
 #include <TemperatureReader.h>
 
+/**
+ * This module reads the analog values for air/water volts as well as reference volts
+ * and calculates water/air temperature from it as well as delta_T
+ * 
+ * errors
+ * E02 - air temperature: voltage too low
+ * E03 - water temperature: voltage too low
+ * E04 - reference voltage too low
+ */
+
 TemperatureReader::TemperatureReader(AnalogReader *analogReader, ComponentState *componentState)
 {
     this->componentState = componentState;

@@ -7,6 +7,10 @@
  * This will only set visible lights on error. The acustic alarm is 
  * handled by AlarmBuzzer, which is responsible for reading the data
  * from this.
+ * 
+ * error codes
+ * E01 - no rpm after initialization period is over - count: number of cycles with 0 rpm
+ * 
  */
 
 RpmWatchdog::RpmWatchdog(ComponentState *componentState)
